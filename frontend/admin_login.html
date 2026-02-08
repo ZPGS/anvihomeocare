@@ -32,51 +32,60 @@
 </footer>
 
 <script>
-  /* =================================================
-     BACKEND CONFIG (single source of truth)
-     ================================================= */
-  const BACKEND = "https://anvihomeocare.onrender.com";
+/* =================================================
+   BACKEND CONFIG (single source of truth)
+   ================================================= */
+const BACKEND = "https://anvihomeocare.onrender.com";
 
-  const msg = document.getElementById("msg");
-  const form = document.getElementById("loginForm");
+const msg = document.getElementById("msg");
+const form = document.getElementById("loginForm");
 
-  function showMsg(text, type = "error") {
-    msg.textContent = text;
-    msg.className = "flash " + type;
-  }
+function showMsg(text, type = "error") {
+  msg.textContent = text;
+  msg.className = "flash " + type;
+}
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    showMsg("Logging in...", "info");
+// 🔐 If already logged in, skip login page
+const existingToken = localStorage.getItem("admin_token");
+if (existingToken) {
+  window.location.replace("/admin_dashboard.html");
+}
 
-    try {
-      const res = await fetch(`${BACKEND}/api/admin/login`, {
-        method: "POST",
-        credentials: "include",   // 🔥 REQUIRED FOR SESSION COOKIE
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          username: document.getElementById("username").value,
-          password: document.getElementById("password").value
-        })
-      });
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  showMsg("Logging in...", "info");
 
-      const data = await res.json();
+  try {
+    const res = await fetch(`${BACKEND}/api/admin/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: document.getElementById("username").value,
+        password: document.getElementById("password").value
+      })
+    });
 
-      if (!res.ok) {
-        showMsg(data.error || "Invalid credentials");
-        return;
-      }
+    const data = await res.json();
 
-      // ✅ Login successful → go to dashboard
-      window.location.replace("/admin_dashboard.html");
-
-    } catch (err) {
-      showMsg("Unable to connect to server");
+    if (!res.ok) {
+      showMsg(data.error || "Invalid credentials");
+      return;
     }
-  });
+
+    // ✅ STORE JWT TOKEN
+    localStorage.setItem("admin_token", data.token);
+
+    // ✅ Redirect to dashboard
+    window.location.replace("/admin_dashboard.html");
+
+  } catch (err) {
+    showMsg("Unable to connect to server");
+  }
+});
 </script>
+
 
 </body>
 </html>

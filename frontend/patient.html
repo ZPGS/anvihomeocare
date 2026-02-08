@@ -1,127 +1,129 @@
 <!doctype html>
-<html>
-  <head>
-    <title>Book Appointment</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/style.css" />
-    <meta charset="UTF-8">
+<html lang="en">
+<head>
+  <title>Book Appointment</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/style.css">
+</head>
 
-  </head>
+<body>
 
-  <body>
-    <header>
-      <h2 class="page-title">Book Your Appointment!</h2>
-    </header>
+<header>
+  <h2 class="page-title">Book Your Appointment!</h2>
+</header>
 
-    <div class="container">
+<div class="container">
 
-      <div id="msg"></div>
+  <div id="msg"></div>
 
-      <h3>Patient Details</h3>
+  <h3>Patient Details</h3>
 
-      <form id="bookForm">
-        <input id="patient_name" placeholder="Full Name" required />
-        <input id="mobile" placeholder="Mobile Number" required />
-        <textarea
-          id="address"
-          placeholder="Postal Address"
-          required
-        ></textarea>
+  <form id="bookForm">
+    <input id="patient_name" placeholder="Full Name" required>
+    <input id="mobile" placeholder="Mobile Number" required>
+    <textarea
+      id="address"
+      placeholder="Postal Address"
+      required
+    ></textarea>
 
-        <h3>Select Available Slot</h3>
-        <select id="slotSelect" required>
-          <option value="">Loading slots...</option>
-        </select>
+    <h3>Select Available Slot</h3>
+    <select id="slotSelect" required>
+      <option value="">Loading slots...</option>
+    </select>
 
-        <button type="submit">Reserve Appointment</button>
-      </form>
-    </div>
+    <button type="submit">Reserve Appointment</button>
+  </form>
+</div>
 
-    <script>
-      //const BACKEND =
-  //window.location.hostname === "localhost"
-    //? "http://localhost:5000"
-    //: "https://anvihomeocare.onrender.com";
- // CHANGE THIS TO YOUR BACKEND URL
- const BACKEND = "https://anvihomeocare.onrender.com";
+<script>
+const BACKEND = "https://anvihomeocare.onrender.com";
 
-      const msg = document.getElementById("msg");
+const msg = document.getElementById("msg");
+const bookForm = document.getElementById("bookForm");
+const slotSelect = document.getElementById("slotSelect");
+const patientName = document.getElementById("patient_name");
+const mobile = document.getElementById("mobile");
+const address = document.getElementById("address");
 
-      function showMsg(text, type = "info") {
-        msg.innerText = text;
-        msg.className = "flash " + type;
-      }
+function showMsg(text, type = "info") {
+  msg.textContent = text;
+  msg.className = "flash " + type;
+}
 
-      // Load slots
-      fetch(`${BACKEND}/api/slots`)
-        .then(r => r.json())
-        .then(slots => {
-          const sel = document.getElementById("slotSelect");
-          sel.innerHTML = "<option value=''>Select Slot</option>";
+async function loadSlots() {
+  slotSelect.innerHTML = "<option>Loading slots...</option>";
 
-          if (!slots.length) {
-            sel.innerHTML = "<option>No slots available</option>";
-            return;
-          }
+  try {
+    const res = await fetch(`${BACKEND}/api/slots`);
+    const slots = await res.json();
 
-          slots.forEach(s => {
-            sel.innerHTML += `
-              <option value="${s.id}">
-                ${s.slot_date} | ${s.start_time} - ${s.end_time}
-              </option>`;
-          });
-        })
-        .catch(() => {
-          showMsg("Failed to load slots", "error");
-        });
+    slotSelect.innerHTML = "<option value=''>Select Slot</option>";
 
-      // Book appointment
-      document.getElementById("bookForm").addEventListener("submit", async e => {
-        e.preventDefault();
+    if (!Array.isArray(slots) || slots.length === 0) {
+      slotSelect.innerHTML = "<option>No slots available</option>";
+      return;
+    }
 
-        showMsg("Reserving slot...", "info");
+    slots.forEach(s => {
+      slotSelect.innerHTML += `
+        <option value="${s.id}">
+          ${s.slot_date} | ${s.start_time} - ${s.end_time}
+        </option>`;
+    });
 
-        const res = await fetch(`${BACKEND}/api/book`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            patient_name: patient_name.value,
-            mobile: mobile.value,
-            address: address.value,
-            slot_id: slotSelect.value
-          })
-        });
+  } catch (err) {
+    showMsg("Failed to load slots", "error");
+  }
+}
 
-        const data = await res.json();
+// Book appointment
+bookForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-        if (!res.ok) {
-          showMsg(data.error || "Booking failed", "error");
-          return;
-        }
+  if (!slotSelect.value) {
+    showMsg("Please select a slot", "error");
+    return;
+  }
 
-        showMsg(
-          `Appointment reserved! Confirmation code: ${data.confirmation_code}`,
-          "success"
-        );
+  showMsg("Reserving slot...", "info");
 
-        bookForm.reset();
-        loadSlots();
-      });
+  try {
+    const res = await fetch(`${BACKEND}/api/book`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        patient_name: patientName.value.trim(),
+        mobile: mobile.value.trim(),
+        address: address.value.trim(),
+        slot_id: slotSelect.value
+      })
+    });
 
-      function loadSlots() {
-        fetch(`${BACKEND}/api/slots`)
-          .then(r => r.json())
-          .then(slots => {
-            const sel = document.getElementById("slotSelect");
-            sel.innerHTML = "<option value=''>Select Slot</option>";
-            slots.forEach(s => {
-              sel.innerHTML += `
-                <option value="${s.id}">
-                  ${s.slot_date} | ${s.start_time} - ${s.end_time}
-                </option>`;
-            });
-          });
-      }
-    </script>
-  </body>
+    const data = await res.json();
+
+    if (!res.ok) {
+      showMsg(data.error || "Booking failed", "error");
+      return;
+    }
+
+    showMsg(
+      `✅ Appointment reserved!\nConfirmation code: ${data.confirmation_code}`,
+      "success"
+    );
+
+    bookForm.reset();
+    loadSlots();
+
+  } catch (err) {
+    showMsg("Unable to connect to server", "error");
+  }
+});
+
+// initial load
+loadSlots();
+</script>
+
+</body>
 </html>

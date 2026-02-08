@@ -1,115 +1,135 @@
 <!doctype html>
-<html>
-  <head>
-    <title>Appointment History</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/style.css" />
-    <meta charset="UTF-8">
+<html lang="en">
+<head>
+  <title>Appointment History</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/style.css">
+</head>
 
-  </head>
+<body>
 
-  <body>
-    <header>
-      <h2>Appointment History</h2>
-    </header>
+<header>
+  <h2>Appointment History</h2>
+</header>
 
-    <div class="container">
+<div class="container">
 
-      <form id="historyForm">
-        <input id="mobile" placeholder="Enter Mobile Number" required />
-        <button type="submit">View History</button>
-      </form>
+  <form id="historyForm">
+    <input
+      id="mobile"
+      placeholder="Enter Mobile Number"
+      required
+    />
+    <button type="submit">View History</button>
+  </form>
 
-      <div id="historySection" style="display:none;">
-        <h3>Your Appointments</h3>
+  <div id="msg"></div>
 
-        <table>
-          <thead>
-            <tr>
-              <th>Confirmation</th>
-              <th>Date</th>
-              <th>Time</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="historyBody"></tbody>
-        </table>
-      </div>
+  <div id="historySection" style="display:none;">
+    <h3>Your Appointments</h3>
 
-      <div id="msg"></div>
-    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Confirmation</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="historyBody"></tbody>
+    </table>
+  </div>
 
-    <script>
-     //const BACKEND =
-  //window.location.hostname === "localhost"
-    //? "http://localhost:5000"
-    //: "https://anvihomeocare.onrender.com"; // CHANGE THIS TO YOUR BACKEND URL
-      const BACKEND = "https://anvihomeocare.onrender.com";
-      const historyBody = document.getElementById("historyBody");
-      const historySection = document.getElementById("historySection");
-      const msg = document.getElementById("msg");
+</div>
 
-      function showMsg(text, type="error") {
-        msg.innerText = text;
-        msg.className = "flash " + type;
-      }
+<script>
+const BACKEND = "https://anvihomeocare.onrender.com";
 
-      document.getElementById("historyForm").addEventListener("submit", async e => {
-        e.preventDefault();
+const historyForm = document.getElementById("historyForm");
+const historyBody = document.getElementById("historyBody");
+const historySection = document.getElementById("historySection");
+const msg = document.getElementById("msg");
+const mobileInput = document.getElementById("mobile");
 
-        historyBody.innerHTML = "";
-        historySection.style.display = "none";
-        showMsg("");
+function showMsg(text, type = "error") {
+  msg.textContent = text;
+  msg.className = "flash " + type;
+}
 
-        const res = await fetch(`${BACKEND}/api/history`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mobile: mobile.value })
-        });
+historyForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-        const data = await res.json();
+  historyBody.innerHTML = "";
+  historySection.style.display = "none";
+  showMsg("");
 
-        if (!res.ok || !data.length) {
-          showMsg("No appointments found");
-          return;
-        }
+  try {
+    const res = await fetch(`${BACKEND}/api/history`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mobile: mobileInput.value.trim()
+      })
+    });
 
-        historySection.style.display = "block";
+    const data = await res.json();
 
-        data.forEach(a => {
-          historyBody.innerHTML += `
-            <tr>
-              <td>${a.confirmation_code}</td>
-              <td>${a.appointment_date}</td>
-              <td>${a.slot_time}</td>
-              <td class="status ${a.status}">${a.status}</td>
-              <td>
-                <a href="${BACKEND}/api/appointment/pdf/${a.confirmation_code}" target="_blank">
-                  PDF
-                </a>
-                ${
-                  a.status === "RESERVED"
-                    ? `<button onclick="cancelAppt('${a.confirmation_code}')"
-                        style="background:red;">Cancel</button>`
-                    : ""
-                }
-              </td>
-            </tr>
-          `;
-        });
-      });
+    if (!res.ok || !Array.isArray(data) || data.length === 0) {
+      showMsg("No appointments found");
+      return;
+    }
 
-      async function cancelAppt(code) {
-        if (!confirm("Cancel appointment?")) return;
+    historySection.style.display = "block";
 
-        await fetch(`${BACKEND}/api/cancel/${code}`, {
-          method: "POST"
-        });
+    data.forEach(a => {
+      historyBody.innerHTML += `
+        <tr>
+          <td>${a.confirmation_code}</td>
+          <td>${a.appointment_date}</td>
+          <td>${a.slot_time}</td>
+          <td class="status ${a.status}">${a.status}</td>
+          <td>
+            <a href="${BACKEND}/api/appointment/pdf/${a.confirmation_code}" target="_blank">
+              PDF
+            </a>
+            ${
+              a.status === "RESERVED"
+                ? `<button
+                     onclick="cancelAppt('${a.confirmation_code}')"
+                     style="background:red;margin-left:6px;">
+                     Cancel
+                   </button>`
+                : ""
+            }
+          </td>
+        </tr>
+      `;
+    });
 
-        showMsg("Appointment cancelled", "success");
-        historyForm.dispatchEvent(new Event("submit"));
-      }
-    </script>
-  </body>
+  } catch (err) {
+    showMsg("Unable to connect to server");
+  }
+});
+
+async function cancelAppt(code) {
+  if (!confirm("Cancel appointment?")) return;
+
+  try {
+    await fetch(`${BACKEND}/api/cancel/${code}`, {
+      method: "POST"
+    });
+
+    showMsg("Appointment cancelled", "success");
+    historyForm.dispatchEvent(new Event("submit"));
+
+  } catch (err) {
+    showMsg("Failed to cancel appointment");
+  }
+}
+</script>
+
+</body>
 </html>

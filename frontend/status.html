@@ -1,138 +1,152 @@
 <!doctype html>
-<html>
-  <head>
-    <title>Appointment Status</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/style.css" />
-    <meta charset="UTF-8">
+<html lang="en">
+<head>
+  <title>Appointment Status</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/style.css">
+</head>
 
-  </head>
+<body>
 
-  <body>
-    <header>
-      <h2>Check Appointment Status</h2>
-    </header>
+<header>
+  <h2>Check Appointment Status</h2>
+</header>
 
-    <div class="container">
+<div class="container">
 
-      <form id="statusForm">
-        <input
-          id="confirmation_code"
-          placeholder="Enter Confirmation Number"
-          required
-        />
-        <button type="submit">Check Status</button>
-      </form>
+  <form id="statusForm">
+    <input
+      id="confirmation_code"
+      placeholder="Enter Confirmation Number"
+      required
+    />
+    <button type="submit">Check Status</button>
+  </form>
 
-      <div id="msg"></div>
+  <div id="msg"></div>
 
-      <div id="details" style="display:none;">
-        <h3>Appointment Details</h3>
+  <div id="details" style="display:none;">
+    <h3>Appointment Details</h3>
 
-        <table>
-          <tr>
-            <th>Confirmation No</th>
-            <td id="d-code"></td>
-          </tr>
-          <tr>
-            <th>Name</th>
-            <td id="d-name"></td>
-          </tr>
-          <tr>
-            <th>Mobile</th>
-            <td id="d-mobile"></td>
-          </tr>
-          <tr>
-            <th>Date</th>
-            <td id="d-date"></td>
-          </tr>
-          <tr>
-            <th>Time</th>
-            <td id="d-time"></td>
-          </tr>
-          <tr>
-            <th>Status</th>
-            <td id="d-status" class="status"></td>
-          </tr>
-        </table>
+    <table>
+      <tr>
+        <th>Confirmation No</th>
+        <td id="d-code"></td>
+      </tr>
+      <tr>
+        <th>Name</th>
+        <td id="d-name"></td>
+      </tr>
+      <tr>
+        <th>Mobile</th>
+        <td id="d-mobile"></td>
+      </tr>
+      <tr>
+        <th>Date</th>
+        <td id="d-date"></td>
+      </tr>
+      <tr>
+        <th>Time</th>
+        <td id="d-time"></td>
+      </tr>
+      <tr>
+        <th>Status</th>
+        <td id="d-status" class="status"></td>
+      </tr>
+    </table>
 
-        <button
-          id="cancelBtn"
-          style="background:red; display:none;"
-          onclick="cancelAppt()">
-          Cancel Appointment
-        </button>
-      </div>
-    </div>
+    <button
+      id="cancelBtn"
+      style="background:red; display:none;"
+    >
+      Cancel Appointment
+    </button>
+  </div>
 
-    <script>
-    //  const BACKEND =
-  //window.location.hostname === "localhost"
-    //? "http://localhost:5000"
-    //: "https://anvihomeocare.onrender.com";
- // CHANGE THIS TO YOUR BACKEND URL
- const BACKEND = "https://anvihomeocare.onrender.com";
+</div>
 
-      const msg = document.getElementById("msg");
-      const details = document.getElementById("details");
-      let currentCode = "";
+<script>
+const BACKEND = "https://anvihomeocare.onrender.com";
 
-      function showMsg(text, type="error") {
-        msg.innerText = text;
-        msg.className = "flash " + type;
-      }
+const statusForm = document.getElementById("statusForm");
+const msg = document.getElementById("msg");
+const details = document.getElementById("details");
+const cancelBtn = document.getElementById("cancelBtn");
 
-      document.getElementById("statusForm").addEventListener("submit", async e => {
-        e.preventDefault();
+let currentCode = "";
 
-        details.style.display = "none";
-        showMsg("");
+function showMsg(text, type = "error") {
+  msg.textContent = text;
+  msg.className = "flash " + type;
+}
 
-        const code = confirmation_code.value.trim();
-        if (!code) return;
+statusForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-        const res = await fetch(`${BACKEND}/api/status`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ confirmation_code: code })
-        });
+  details.style.display = "none";
+  showMsg("");
 
-        const data = await res.json();
+  const codeInput = document.getElementById("confirmation_code");
+  const code = codeInput.value.trim();
 
-        if (!res.ok) {
-          showMsg(data.error || "Appointment not found");
-          return;
-        }
+  if (!code) return;
 
-        currentCode = data.confirmation_code;
+  try {
+    const res = await fetch(`${BACKEND}/api/status`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ confirmation_code: code })
+    });
 
-        document.getElementById("d-code").innerText = data.confirmation_code;
-        document.getElementById("d-name").innerText = data.patient_name;
-        document.getElementById("d-mobile").innerText = data.mobile;
-        document.getElementById("d-date").innerText = data.appointment_date;
-        document.getElementById("d-time").innerText = data.slot_time;
-        document.getElementById("d-status").innerText = data.status;
-        document.getElementById("d-status").className = "status " + data.status;
+    const data = await res.json();
 
-        if (data.status === "RESERVED") {
-          cancelBtn.style.display = "inline-block";
-        } else {
-          cancelBtn.style.display = "none";
-        }
+    if (!res.ok) {
+      showMsg(data.error || "Appointment not found");
+      return;
+    }
 
-        details.style.display = "block";
-      });
+    currentCode = data.confirmation_code;
 
-      async function cancelAppt() {
-        if (!confirm("Cancel this appointment?")) return;
+    document.getElementById("d-code").textContent = data.confirmation_code;
+    document.getElementById("d-name").textContent = data.patient_name;
+    document.getElementById("d-mobile").textContent = data.mobile;
+    document.getElementById("d-date").textContent = data.appointment_date;
+    document.getElementById("d-time").textContent = data.slot_time;
 
-        await fetch(`${BACKEND}/api/cancel/${currentCode}`, {
-          method: "POST"
-        });
+    const statusCell = document.getElementById("d-status");
+    statusCell.textContent = data.status;
+    statusCell.className = "status " + data.status;
 
-        showMsg("Appointment cancelled", "success");
-        details.style.display = "none";
-      }
-    </script>
-  </body>
+    if (data.status === "RESERVED") {
+      cancelBtn.style.display = "inline-block";
+    } else {
+      cancelBtn.style.display = "none";
+    }
+
+    details.style.display = "block";
+
+  } catch (err) {
+    showMsg("Unable to connect to server");
+  }
+});
+
+cancelBtn.addEventListener("click", async () => {
+  if (!confirm("Cancel this appointment?")) return;
+
+  try {
+    await fetch(`${BACKEND}/api/cancel/${currentCode}`, {
+      method: "POST"
+    });
+
+    showMsg("Appointment cancelled", "success");
+    details.style.display = "none";
+
+  } catch (err) {
+    showMsg("Failed to cancel appointment");
+  }
+});
+</script>
+
+</body>
 </html>
