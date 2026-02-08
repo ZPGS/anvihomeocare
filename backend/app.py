@@ -20,9 +20,11 @@ CORS(
     resources={r"/api/*": {"origins": [
         "http://localhost:5500",
         "http://127.0.0.1:5500",
-        "https://anvihomeocare.netlify.app"
+        "https://anvihomeocare.netlify.app",
+        "https://www.anvihomeocare.netlify.app"
     ]}}
 )
+
 
 # =================================================
 # JWT CONFIG
