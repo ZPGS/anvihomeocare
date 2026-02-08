@@ -32,9 +32,6 @@
 </footer>
 
 <script>
-/* =================================================
-   BACKEND CONFIG (single source of truth)
-   ================================================= */
 const BACKEND = "https://anvihomeocare.onrender.com";
 
 const msg = document.getElementById("msg");
@@ -45,46 +42,36 @@ function showMsg(text, type = "error") {
   msg.className = "flash " + type;
 }
 
-// 🔐 If already logged in, skip login page
-const existingToken = localStorage.getItem("admin_token");
-if (existingToken) {
-  window.location.replace("/admin_dashboard.html");
-}
-
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   showMsg("Logging in...", "info");
 
-  try {
-    const res = await fetch(`${BACKEND}/api/admin/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        username: document.getElementById("username").value,
-        password: document.getElementById("password").value
-      })
-    });
+  const res = await fetch(`${BACKEND}/api/admin/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      username: username.value,
+      password: password.value
+    })
+  });
 
-    const data = await res.json();
+  const data = await res.json();
 
-    if (!res.ok) {
-      showMsg(data.error || "Invalid credentials");
-      return;
-    }
-
-    // ✅ STORE JWT TOKEN
-    localStorage.setItem("admin_token", data.token);
-
-    // ✅ Redirect to dashboard
-    window.location.replace("/admin_dashboard.html");
-
-  } catch (err) {
-    showMsg("Unable to connect to server");
+  if (!res.ok) {
+    showMsg(data.error || "Login failed");
+    return;
   }
+
+  // ✅ STORE JWT
+  localStorage.setItem("admin_token", data.token);
+
+  // ✅ REDIRECT
+  location.replace("/admin_dashboard.html");
 });
 </script>
+
 
 
 </body>

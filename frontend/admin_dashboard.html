@@ -2,74 +2,77 @@
 <html lang="en">
 <head>
   <title>SangamKripa HomeoCare – Admin</title>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/style.css" />
 </head>
 
 <body>
 
 <header class="bento-header">
-  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+  <button class="hamburger" id="menuBtn" aria-label="Menu">
     <span></span><span></span><span></span>
   </button>
-  <h2 class="page-title">Admin</h2>
+  <h2 class="page-title">Admin Dashboard</h2>
 </header>
 
-<!-- ================= SIDE PANEL ================= -->
+<!-- SIDE PANEL -->
 <div id="sidePanel" class="side-panel">
   <h3>Doctor Settings</h3>
 
   <form id="settingsForm">
     <label>Doctor WhatsApp</label>
-    <input id="doctor_whatsapp" placeholder="91XXXXXXXXXX">
+    <input id="doctor_whatsapp" placeholder="91XXXXXXXXXX" />
 
     <label>Consultation Fee (₹)</label>
-    <input type="number" id="default_amount" placeholder="500">
+    <input type="number" id="default_amount" placeholder="500" />
 
-    <label>UPI ID / Payment Link</label>
-    <input id="upi_link" placeholder="example@upi">
+    <label>UPI ID</label>
+    <input id="upi_link" placeholder="example@upi" />
 
     <button type="submit">Save Settings</button>
-    <a href="#" id="logoutBtn" class="logout-btn">Logout</a>
+    <button type="button" id="logoutBtn" class="logout-btn">Logout</button>
   </form>
 </div>
 
 <main class="dashboard">
 
-<!-- ================= STATS ================= -->
-<section class="stats-bento">
-  <div class="stat-card total"><span>Total</span><h1 id="stat-total">0</h1></div>
-  <div class="stat-card reserved"><span>Reserved</span><h1 id="stat-reserved">0</h1></div>
-  <div class="stat-card confirmed"><span>Confirmed</span><h1 id="stat-confirmed">0</h1></div>
-  <div class="stat-card today"><span>Today</span><h1 id="stat-today">0</h1></div>
-</section>
+  <!-- STATS -->
+  <section class="stats-bento">
+    <div class="stat-card total"><span>Total</span><h1 id="stat-total">0</h1></div>
+    <div class="stat-card reserved"><span>Reserved</span><h1 id="stat-reserved">0</h1></div>
+    <div class="stat-card confirmed"><span>Confirmed</span><h1 id="stat-confirmed">0</h1></div>
+    <div class="stat-card today"><span>Today</span><h1 id="stat-today">0</h1></div>
+  </section>
 
-<!-- ================= APPOINTMENTS ================= -->
-<section class="bento appointments-box">
-  <h3>Appointments</h3>
-  <div id="appointments" class="appointments-scroll"></div>
-</section>
+  <!-- APPOINTMENTS -->
+  <section class="bento appointments-box">
+    <h3>Appointments</h3>
+    <div id="appointments" class="appointments-scroll"></div>
+  </section>
 
-<!-- ================= SLOTS ================= -->
-<section class="bento slots-box">
-  <h3>Slots</h3>
+  <!-- SLOTS -->
+  <section class="bento slots-box">
+    <h3>Slots</h3>
 
-  <form id="slotForm" class="slot-form">
-    <input type="date" id="slot_date" required>
-    <input type="time" id="start_time" required>
-    <input type="time" id="end_time" required>
-    <button type="submit">Add Slot</button>
-  </form>
+    <form id="slotForm" class="slot-form">
+      <input type="date" id="slot_date" required />
+      <input type="time" id="start_time" required />
+      <input type="time" id="end_time" required />
+      <button type="submit">Add Slot</button>
+    </form>
 
-  <div id="slots" class="slots-grid"></div>
-</section>
+    <div id="slots" class="slots-grid"></div>
+  </section>
 
 </main>
 
-<footer>© 2026 Dr. HomeoCare • Online Homeopathy Consultation</footer>
+<footer>© 2026 SangamKripa HomeoCare</footer>
 
 <script>
+/* =====================================================
+   CONFIG
+===================================================== */
 const BACKEND = "https://anvihomeocare.onrender.com";
 const TOKEN = localStorage.getItem("admin_token");
 
@@ -77,200 +80,180 @@ if (!TOKEN) {
   location.replace("/admin_login.html");
 }
 
-function toggleMenu() {
-  document.getElementById("sidePanel").classList.toggle("open");
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  const slotForm = document.getElementById("slotForm");
-  const settingsForm = document.getElementById("settingsForm");
-  const appointmentsDiv = document.getElementById("appointments");
-  const slotsDiv = document.getElementById("slots");
-
-  async function api(url, options = {}) {
-    const res = await fetch(url, {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + TOKEN,
-        ...(options.headers || {})
-      }
-    });
-
-    if (res.status === 401) {
-      localStorage.removeItem("admin_token");
-      location.replace("/admin_login.html");
-      return null;
+/* =====================================================
+   HELPERS
+===================================================== */
+async function api(url, options = {}) {
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + TOKEN,
+      ...(options.headers || {})
     }
+  });
 
-    return res.json();
+  if (res.status === 401) {
+    localStorage.removeItem("admin_token");
+    location.replace("/admin_login.html");
+    return null;
   }
 
-  async function loadDashboard() {
-    const data = await api(`${BACKEND}/api/admin/dashboard`);
-    if (!data) return;
+  return res.json();
+}
 
-    document.getElementById("stat-total").innerText = data.stats.total;
-document.getElementById("stat-reserved").innerText = data.stats.reserved;
-document.getElementById("stat-confirmed").innerText = data.stats.confirmed;
-document.getElementById("stat-today").innerText = data.stats.today;
+/* =====================================================
+   UI
+===================================================== */
+document.getElementById("menuBtn").onclick = () => {
+  document.getElementById("sidePanel").classList.toggle("open");
+};
 
-    // settings
-    doctor_whatsapp.value = data.settings.doctor_whatsapp || "";
-    default_amount.value = data.settings.default_amount || "";
-    upi_link.value = data.settings.upi_link || "";
+document.getElementById("logoutBtn").onclick = () => {
+  localStorage.removeItem("admin_token");
+  location.replace("/admin_login.html");
+};
 
-    // appointments
-    appointmentsDiv.innerHTML = "";
+/* =====================================================
+   DASHBOARD LOAD
+===================================================== */
+async function loadDashboard() {
+  const data = await api(`${BACKEND}/api/admin/dashboard`);
+  if (!data) return;
 
-    data.appointments.forEach(a => {
-      const receiptLink = `${BACKEND}/api/appointment/pdf/${a.confirmation_code}`;
-      const meetingLink = a.meeting_link || "Will be shared soon";
+  document.getElementById("stat-total").innerText = data.stats.total;
+  document.getElementById("stat-reserved").innerText = data.stats.reserved;
+  document.getElementById("stat-confirmed").innerText = data.stats.confirmed;
+  document.getElementById("stat-today").innerText = data.stats.today;
 
-      let waButton = "";
+  doctor_whatsapp.value = data.settings.doctor_whatsapp || "";
+  default_amount.value = data.settings.default_amount || "";
+  upi_link.value = data.settings.upi_link || "";
 
-      if (a.status === "RESERVED") {
-        const amount = data.settings.default_amount;
-        const upiId = data.settings.upi_link;
-        const upiPayLink = `upi://pay?pa=${upiId}&am=${amount}&cu=INR`;
+  renderAppointments(data.appointments, data.settings);
+  renderSlots(data.slots);
+}
 
-        const text = `Hello ${a.patient_name},
+/* =====================================================
+   APPOINTMENTS
+===================================================== */
+function renderAppointments(list, settings) {
+  const box = document.getElementById("appointments");
+  box.innerHTML = "";
+
+  list.forEach(a => {
+    const amount = settings.default_amount || 0;
+    const upi = settings.upi_link || "";
+
+    let waBtn = "";
+
+    if (a.status === "RESERVED") {
+      const text = `Hello ${a.patient_name},
 
 Your appointment has been *RESERVED*.
 
-📅 Date: ${a.appointment_date}
-⏰ Time: ${a.slot_time}
+📅 ${a.appointment_date}
+⏰ ${a.slot_time}
 
-💰 Consultation Fee: ₹${amount}
+💰 Fee: ₹${amount}
 
-Please complete the payment using the UPI link below.
+UPI:
+upi://pay?pa=${upi}&am=${amount}&cu=INR`;
 
-📲 Pay via UPI:
-${upiPayLink}
+      waBtn = `
+        <a class="wa-btn" target="_blank"
+           href="https://api.whatsapp.com/send?phone=${a.mobile}&text=${encodeURIComponent(text)}">
+           💰 Send Payment
+        </a>`;
+    }
 
-UPI ID (manual):
-${upiId}
+    box.innerHTML += `
+      <div class="appointment-card">
+        <strong>${a.patient_name}</strong> (${a.mobile})<br>
+        ${a.appointment_date} | ${a.slot_time}<br>
+        <small>${a.confirmation_code}</small>
 
-Thank you,
-Dr. Shweta Chandrakant Zungare`;
+        <textarea id="r${a.id}" placeholder="Remarks">${a.admin_remarks || ""}</textarea>
+        <input id="m${a.id}" placeholder="Meeting link" value="${a.meeting_link || ""}">
 
-        waButton = `
-          <a class="wa-btn" target="_blank"
-             href="https://api.whatsapp.com/send?phone=${a.mobile}&text=${encodeURIComponent(text)}">
-            💰 Send Payment Message
-          </a>`;
-      }
+        <select id="s${a.id}">
+          ${["RESERVED","CONFIRMED","CANCELLED","DONE"]
+            .map(s => `<option ${a.status===s?"selected":""}>${s}</option>`).join("")}
+        </select>
 
-      if (a.status === "CONFIRMED") {
-        const text = `Hello ${a.patient_name},
+        <button onclick="updateAppt(${a.id})">Update</button>
+        ${waBtn}
+      </div>
+    `;
+  });
+}
 
-Your appointment has been *CONFIRMED* ✅
-
-🆔 Code: ${a.confirmation_code}
-
-📅 Date: ${a.appointment_date}
-⏰ Time: ${a.slot_time}
-
-🔗 Meeting Link:
-${meetingLink}
-
-🧾 Receipt:
-${receiptLink}
-
-Thank you,
-Dr. Shweta Chandrakant Zungare`;
-
-        waButton = `
-          <a class="wa-btn" target="_blank"
-             href="https://api.whatsapp.com/send?phone=${a.mobile}&text=${encodeURIComponent(text)}">
-            📲 Send Confirmation
-          </a>`;
-      }
-
-      appointmentsDiv.innerHTML += `
-        <div class="appointment-card">
-          <strong>${a.patient_name}</strong> (${a.mobile})<br>
-          ${a.appointment_date} | ${a.slot_time}<br>
-          <small>${a.confirmation_code}</small>
-
-          <textarea id="r${a.id}" placeholder="Internal notes">${a.admin_remarks || ""}</textarea>
-          <input id="m${a.id}" placeholder="Meeting link" value="${a.meeting_link || ""}">
-
-          <select id="s${a.id}">
-            ${["RESERVED","CONFIRMED","CANCELLED","DONE"]
-              .map(s => `<option ${a.status===s?"selected":""}>${s}</option>`).join("")}
-          </select>
-
-          <div class="card-actions">
-            <button class="update-btn" data-id="${a.id}">Update</button>
-            ${waButton}
-          </div>
-        </div>`;
-    });
-
-    document.querySelectorAll(".update-btn").forEach(btn => {
-      btn.onclick = async () => {
-        const id = btn.dataset.id;
-        await api(`${BACKEND}/api/admin/update/${id}`, {
-          method: "POST",
-          body: JSON.stringify({
-            status: document.getElementById("s"+id).value,
-            meeting_link: document.getElementById("m"+id).value,
-            remarks: document.getElementById("r"+id).value
-          })
-        });
-        loadDashboard();
-      };
-    });
-
-    // slots
-    slotsDiv.innerHTML = "";
-    data.slots.forEach(s => {
-      slotsDiv.innerHTML += `
-        <div class="slot-chip ${s.is_booked ? "booked" : ""}">
-          <strong>${s.slot_date}</strong>
-          <div>${s.start_time} – ${s.end_time}</div>
-          <small>${s.is_booked ? "BOOKED" : "FREE"}</small>
-        </div>`;
-    });
-  }
-
-  slotForm.onsubmit = async e => {
-    e.preventDefault();
-    await api(`${BACKEND}/api/admin/slots`, {
-      method: "POST",
-      body: JSON.stringify({
-        slot_date: slot_date.value,
-        start_time: start_time.value,
-        end_time: end_time.value
-      })
-    });
-    slotForm.reset();
-    loadDashboard();
-  };
-
-  settingsForm.onsubmit = async e => {
-    e.preventDefault();
-    await api(`${BACKEND}/api/admin/settings`, {
-      method: "POST",
-      body: JSON.stringify({
-        doctor_whatsapp: doctor_whatsapp.value,
-        upi_link: upi_link.value,
-        default_amount: default_amount.value
-      })
-    });
-    alert("Settings saved");
-  };
-
-  logoutBtn.onclick = () => {
-    localStorage.removeItem("admin_token");
-    location.replace("/admin_login.html");
-  };
-
+async function updateAppt(id) {
+  await api(`${BACKEND}/api/admin/update/${id}`, {
+    method: "POST",
+    body: JSON.stringify({
+      status: document.getElementById("s"+id).value,
+      meeting_link: document.getElementById("m"+id).value,
+      remarks: document.getElementById("r"+id).value
+    })
+  });
   loadDashboard();
-  setInterval(loadDashboard, 30000);
-});
+}
+
+/* =====================================================
+   SLOTS
+===================================================== */
+function renderSlots(slots) {
+  const box = document.getElementById("slots");
+  box.innerHTML = "";
+
+  slots.forEach(s => {
+    box.innerHTML += `
+      <div class="slot-chip ${s.is_booked ? "booked" : ""}">
+        <strong>${s.slot_date}</strong>
+        <div>${s.start_time} – ${s.end_time}</div>
+        <small>${s.is_booked ? "BOOKED" : "FREE"}</small>
+      </div>
+    `;
+  });
+}
+
+document.getElementById("slotForm").onsubmit = async e => {
+  e.preventDefault();
+
+  await api(`${BACKEND}/api/admin/slots`, {
+    method: "POST",
+    body: JSON.stringify({
+      slot_date: slot_date.value,
+      start_time: start_time.value,
+      end_time: end_time.value
+    })
+  });
+
+  e.target.reset();
+  loadDashboard();
+};
+
+/* =====================================================
+   SETTINGS
+===================================================== */
+document.getElementById("settingsForm").onsubmit = async e => {
+  e.preventDefault();
+
+  await api(`${BACKEND}/api/admin/settings`, {
+    method: "POST",
+    body: JSON.stringify({
+      doctor_whatsapp: doctor_whatsapp.value,
+      upi_link: upi_link.value,
+      default_amount: default_amount.value
+    })
+  });
+
+  alert("Settings saved");
+};
+
+loadDashboard();
+setInterval(loadDashboard, 30000);
 </script>
 
 </body>
