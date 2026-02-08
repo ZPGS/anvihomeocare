@@ -55,9 +55,13 @@ def create_token():
         "admin": True,
         "exp": datetime.utcnow() + timedelta(minutes=JWT_EXP_MINUTES)
     }
+
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGO)
+
+    # PyJWT < 2 returned bytes, >=2 returns str
     if isinstance(token, bytes):
         token = token.decode("utf-8")
+
     return token
 
 

@@ -3,4 +3,4 @@ Flask-Mail==0.9.1
 APScheduler==3.10.4
 flask-cors==3.0.10
 reportlab==3.6.12
-jwt
+PyJWT==2.8.0
