@@ -1,18 +1,16 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>SangamKripa HomeoCare – Admin</title>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="/style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/style.css">
 </head>
 
 <body>
 
 <header class="bento-header">
-  <button class="hamburger" id="menuBtn" aria-label="Menu">
-    <span></span><span></span><span></span>
-  </button>
+  <button class="hamburger" onclick="toggleMenu()">☰</button>
   <h2 class="page-title">Admin Dashboard</h2>
 </header>
 
@@ -22,67 +20,65 @@
 
   <form id="settingsForm">
     <label>Doctor WhatsApp</label>
-    <input id="doctor_whatsapp" placeholder="91XXXXXXXXXX" />
+    <input id="doctor_whatsapp">
 
     <label>Consultation Fee (₹)</label>
-    <input type="number" id="default_amount" placeholder="500" />
+    <input type="number" id="default_amount">
 
     <label>UPI ID</label>
-    <input id="upi_link" placeholder="example@upi" />
+    <input id="upi_link">
 
-    <button type="submit">Save Settings</button>
-    <button type="button" id="logoutBtn" class="logout-btn">Logout</button>
+    <button type="submit">Save</button>
+    <a href="#" id="logoutBtn" class="logout-btn">Logout</a>
   </form>
 </div>
 
 <main class="dashboard">
 
-  <!-- STATS -->
-  <section class="stats-bento">
-    <div class="stat-card total"><span>Total</span><h1 id="stat-total">0</h1></div>
-    <div class="stat-card reserved"><span>Reserved</span><h1 id="stat-reserved">0</h1></div>
-    <div class="stat-card confirmed"><span>Confirmed</span><h1 id="stat-confirmed">0</h1></div>
-    <div class="stat-card today"><span>Today</span><h1 id="stat-today">0</h1></div>
-  </section>
+<!-- STATS -->
+<section class="stats-bento">
+  <div class="stat-card total"><span>Total</span><h1 id="stat-total">0</h1></div>
+  <div class="stat-card reserved"><span>Reserved</span><h1 id="stat-reserved">0</h1></div>
+  <div class="stat-card confirmed"><span>Confirmed</span><h1 id="stat-confirmed">0</h1></div>
+  <div class="stat-card today"><span>Today</span><h1 id="stat-today">0</h1></div>
+</section>
 
-  <!-- APPOINTMENTS -->
-  <section class="bento appointments-box">
-    <h3>Appointments</h3>
-    <div id="appointments" class="appointments-scroll"></div>
-  </section>
+<!-- APPOINTMENTS -->
+<section class="bento appointments-box">
+  <h3>Appointments</h3>
+  <div id="appointments" class="appointments-scroll"></div>
+</section>
 
-  <!-- SLOTS -->
-  <section class="bento slots-box">
-    <h3>Slots</h3>
+<!-- SLOTS -->
+<section class="bento slots-box">
+  <h3>Slots</h3>
 
-    <form id="slotForm" class="slot-form">
-      <input type="date" id="slot_date" required />
-      <input type="time" id="start_time" required />
-      <input type="time" id="end_time" required />
-      <button type="submit">Add Slot</button>
-    </form>
+  <form id="slotForm" class="slot-form">
+    <input type="date" id="slot_date" required>
+    <input type="time" id="start_time" required>
+    <input type="time" id="end_time" required>
+    <button>Add Slot</button>
+  </form>
 
-    <div id="slots" class="slots-grid"></div>
-  </section>
+  <div id="slots" class="slots-grid"></div>
+</section>
 
 </main>
 
-<footer>© 2026 SangamKripa HomeoCare</footer>
+<footer>© 2026 Dr. HomeoCare</footer>
 
 <script>
-/* =====================================================
-   CONFIG
-===================================================== */
+/* ================= CONFIG ================= */
 const BACKEND = "https://anvihomeocare.onrender.com";
 const TOKEN = localStorage.getItem("admin_token");
 
-if (!TOKEN) {
-  location.replace("/admin_login.html");
+if (!TOKEN) location.replace("/admin_login.html");
+
+/* ================= HELPERS ================= */
+function toggleMenu() {
+  document.getElementById("sidePanel").classList.toggle("open");
 }
 
-/* =====================================================
-   HELPERS
-===================================================== */
 async function api(url, options = {}) {
   const res = await fetch(url, {
     ...options,
@@ -102,68 +98,73 @@ async function api(url, options = {}) {
   return res.json();
 }
 
-/* =====================================================
-   UI
-===================================================== */
-document.getElementById("menuBtn").onclick = () => {
-  document.getElementById("sidePanel").classList.toggle("open");
-};
-
-document.getElementById("logoutBtn").onclick = () => {
-  localStorage.removeItem("admin_token");
-  location.replace("/admin_login.html");
-};
-
-/* =====================================================
-   DASHBOARD LOAD
-===================================================== */
+/* ================= LOAD DASHBOARD ================= */
 async function loadDashboard() {
   const data = await api(`${BACKEND}/api/admin/dashboard`);
   if (!data) return;
 
+  // stats
   document.getElementById("stat-total").innerText = data.stats.total;
   document.getElementById("stat-reserved").innerText = data.stats.reserved;
   document.getElementById("stat-confirmed").innerText = data.stats.confirmed;
   document.getElementById("stat-today").innerText = data.stats.today;
 
+  // settings
   doctor_whatsapp.value = data.settings.doctor_whatsapp || "";
   default_amount.value = data.settings.default_amount || "";
   upi_link.value = data.settings.upi_link || "";
 
-  renderAppointments(data.appointments, data.settings);
-  renderSlots(data.slots);
-}
-
-/* =====================================================
-   APPOINTMENTS
-===================================================== */
-function renderAppointments(list, settings) {
+  // appointments
   const box = document.getElementById("appointments");
   box.innerHTML = "";
 
-  list.forEach(a => {
-    const amount = settings.default_amount || 0;
-    const upi = settings.upi_link || "";
-
+  data.appointments.forEach(a => {
     let waBtn = "";
 
     if (a.status === "RESERVED") {
-      const text = `Hello ${a.patient_name},
+      const text =
+`Hello ${a.patient_name},
 
-Your appointment has been *RESERVED*.
+Your appointment has been *RESERVED* 🕒
 
-📅 ${a.appointment_date}
-⏰ ${a.slot_time}
+📅 Date: ${a.appointment_date}
+⏰ Time: ${a.slot_time}
 
-💰 Fee: ₹${amount}
+💰 Fee: ₹${data.settings.default_amount}
 
-UPI:
-upi://pay?pa=${upi}&am=${amount}&cu=INR`;
+📲 Pay via UPI:
+upi://pay?pa=${data.settings.upi_link}&am=${data.settings.default_amount}&cu=INR
+
+Thank you,
+Dr. Shweta Chandrakant Zungare`;
 
       waBtn = `
         <a class="wa-btn" target="_blank"
            href="https://api.whatsapp.com/send?phone=${a.mobile}&text=${encodeURIComponent(text)}">
-           💰 Send Payment
+          💰 Send Payment
+        </a>`;
+    }
+
+    if (a.status === "CONFIRMED") {
+      const text =
+`Hello ${a.patient_name},
+
+Your appointment is *CONFIRMED* ✅
+
+🆔 Code: ${a.confirmation_code}
+📅 Date: ${a.appointment_date}
+⏰ Time: ${a.slot_time}
+
+🔗 Meeting Link:
+${a.meeting_link || "Will be shared soon"}
+
+Thank you,
+Dr. Shweta Chandrakant Zungare`;
+
+      waBtn = `
+        <a class="wa-btn" target="_blank"
+           href="https://api.whatsapp.com/send?phone=${a.mobile}&text=${encodeURIComponent(text)}">
+          📲 Send Confirmation
         </a>`;
     }
 
@@ -181,13 +182,27 @@ upi://pay?pa=${upi}&am=${amount}&cu=INR`;
             .map(s => `<option ${a.status===s?"selected":""}>${s}</option>`).join("")}
         </select>
 
-        <button onclick="updateAppt(${a.id})">Update</button>
-        ${waBtn}
-      </div>
-    `;
+        <div class="card-actions">
+          <button onclick="updateAppt(${a.id})">Update</button>
+          ${waBtn}
+        </div>
+      </div>`;
+  });
+
+  // slots
+  const sbox = document.getElementById("slots");
+  sbox.innerHTML = "";
+  data.slots.forEach(s => {
+    sbox.innerHTML += `
+      <div class="slot-chip ${s.is_booked ? "booked" : ""}">
+        <strong>${s.slot_date}</strong>
+        <div>${s.start_time} – ${s.end_time}</div>
+        <small>${s.is_booked ? "BOOKED" : "FREE"}</small>
+      </div>`;
   });
 }
 
+/* ================= ACTIONS ================= */
 async function updateAppt(id) {
   await api(`${BACKEND}/api/admin/update/${id}`, {
     method: "POST",
@@ -200,27 +215,8 @@ async function updateAppt(id) {
   loadDashboard();
 }
 
-/* =====================================================
-   SLOTS
-===================================================== */
-function renderSlots(slots) {
-  const box = document.getElementById("slots");
-  box.innerHTML = "";
-
-  slots.forEach(s => {
-    box.innerHTML += `
-      <div class="slot-chip ${s.is_booked ? "booked" : ""}">
-        <strong>${s.slot_date}</strong>
-        <div>${s.start_time} – ${s.end_time}</div>
-        <small>${s.is_booked ? "BOOKED" : "FREE"}</small>
-      </div>
-    `;
-  });
-}
-
-document.getElementById("slotForm").onsubmit = async e => {
+slotForm.onsubmit = async e => {
   e.preventDefault();
-
   await api(`${BACKEND}/api/admin/slots`, {
     method: "POST",
     body: JSON.stringify({
@@ -229,17 +225,12 @@ document.getElementById("slotForm").onsubmit = async e => {
       end_time: end_time.value
     })
   });
-
-  e.target.reset();
+  slotForm.reset();
   loadDashboard();
 };
 
-/* =====================================================
-   SETTINGS
-===================================================== */
-document.getElementById("settingsForm").onsubmit = async e => {
+settingsForm.onsubmit = async e => {
   e.preventDefault();
-
   await api(`${BACKEND}/api/admin/settings`, {
     method: "POST",
     body: JSON.stringify({
@@ -248,8 +239,12 @@ document.getElementById("settingsForm").onsubmit = async e => {
       default_amount: default_amount.value
     })
   });
+  alert("Saved");
+};
 
-  alert("Settings saved");
+logoutBtn.onclick = () => {
+  localStorage.removeItem("admin_token");
+  location.replace("/admin_login.html");
 };
 
 loadDashboard();
