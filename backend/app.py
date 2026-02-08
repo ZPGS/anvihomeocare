@@ -258,14 +258,18 @@ def appointment_pdf(code):
 # =================================================
 # ADMIN APIs (JWT)
 # =================================================
-@app.route("/api/admin/login", methods=["POST"])
+@app.route("/api/admin/login", methods=["POST", "OPTIONS"])
 def admin_login():
-    data = request.json
+    data = request.get_json(silent=True)
+
+    if not data:
+        return jsonify({"error": "Invalid request"}), 400
 
     if data.get("username") == "admin" and data.get("password") == "admin123":
         return jsonify({"token": create_token()})
 
     return jsonify({"error": "Invalid credentials"}), 401
+
 
 
 @app.route("/api/admin/dashboard")
