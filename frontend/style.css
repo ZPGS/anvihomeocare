@@ -1,0 +1,993 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  margin: 0;
+  background: #f4f7f6;
+  color: #333;
+}
+/* -------- ADMIN LAYOUT -------- */
+.admin-section {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+}
+
+.admin-section h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #1e8449;
+}
+
+/* -------- SLOT TABLE -------- */
+.slots-table td,
+.slots-table th {
+  text-align: left;
+}
+
+/* -------- APPOINTMENT CARD -------- */
+.appointment-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 18px;
+  margin-bottom: 20px;
+  background: #fafafa;
+}
+
+.appointment-header {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.appointment-header strong {
+  font-size: 15px;
+}
+
+.appointment-actions {
+  margin-top: 12px;
+}
+
+.appointment-actions button {
+  width: auto;
+  margin-top: 10px;
+}
+
+.status {
+  padding: 6px 10px;
+  border-radius: 20px;
+  display: inline-block;
+  font-size: 13px;
+}
+
+/* -------- BUTTON ROW -------- */
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* -------- HERO -------- */
+.hero {
+  background: linear-gradient(120deg, #1e8449, #27ae60);
+  color: white;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+.hero p {
+  font-size: 18px;
+  opacity: 0.9;
+}
+
+.cta {
+  margin-top: 30px;
+}
+
+.btn {
+  padding: 12px 24px;
+  text-decoration: none;
+  border-radius: 4px;
+  margin: 5px;
+  display: inline-block;
+  font-weight: bold;
+}
+
+.primary {
+  background: white;
+  color: #1e8449;
+}
+
+.secondary {
+  border: 2px solid white;
+  color: white;
+}
+
+/* -------- SECTIONS -------- */
+.section {
+  padding: 60px 20px;
+  max-width: 1100px;
+  margin: auto;
+}
+
+.section h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 32px;
+}
+
+.light {
+  background: #eef6f1;
+}
+
+.center-text {
+  text-align: center;
+}
+
+/* -------- STEPS -------- */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.step {
+  background: white;
+  padding: 20px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.step span {
+  font-size: 32px;
+  font-weight: bold;
+  color: #1e8449;
+}
+
+/* -------- TESTIMONIALS -------- */
+.testimonials {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-top: 30px;
+}
+
+.testimonials .card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+  text-align: center;
+}
+
+/* -------- FORMS -------- */
+.container {
+  background: white;
+  padding: 20px;
+  border-radius: 6px;
+  max-width: 900px;
+  margin: 30px auto;
+}
+
+input,
+textarea,
+select,
+button {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+}
+
+button {
+  background: #1e8449;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+/* -------- TABLES -------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background: #1e8449;
+  color: white;
+}
+
+/* -------- STATUS -------- */
+.status {
+  font-weight: bold;
+}
+
+.RESERVED {
+  color: orange;
+}
+.CONFIRMED {
+  color: green;
+}
+.CANCELLED {
+  color: red;
+}
+.DONE {
+  color: blue;
+}
+
+/* -------- FOOTER -------- */
+footer {
+  text-align: center;
+  padding: 20px;
+  background: #1e8449;
+  color: white;
+  margin-top: 40px;
+}
+
+/* -------- FLASH -------- */
+.flash.info {
+  background: #dff0d8;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+/* -------- ANIMATIONS -------- */
+.fade-in {
+  animation: fadeIn 1s ease-in;
+}
+
+.slide-up {
+  animation: slideUp 0.8s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* -------- DOCTOR PROFILE -------- */
+.doctor-profile {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 20px;
+  align-items: center;
+}
+
+.doctor-profile img {
+  width: 180px;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* -------- GALLERY -------- */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 15px;
+}
+
+.gallery img {
+  width: 100%;
+  border-radius: 6px;
+  transition: transform 0.3s;
+}
+
+.gallery img:hover {
+  transform: scale(1.05);
+}
+
+/* -------- HOVER CARDS -------- */
+.hover-card {
+  transition:
+    transform 0.3s,
+    box-shadow 0.3s;
+}
+
+.hover-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* -------- WHATSAPP FLOAT -------- */
+.whatsapp-float {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  background: #25d366;
+  color: white;
+  font-size: 26px;
+  padding: 14px 16px;
+  border-radius: 50%;
+  text-decoration: none;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  z-index: 999;
+}
+.wa-btn {
+  display: inline-block;
+  background: #25D366;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: bold;
+}
+@media (max-width: 768px) {
+
+  header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .appointment-header {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .row {
+    grid-template-columns: 1fr;
+  }
+
+  .action-row {
+    flex-direction: column;
+  }
+
+  .wa-btn {
+    text-align: center;
+  }
+
+  table {
+    font-size: 14px;
+  }
+}
+/* -------- RESPONSIVE -------- */
+.bento-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: white;
+  border-bottom: 1px solid #eee;
+}
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 20px;
+}
+
+.bento {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.05);
+}
+
+.doctor-box { grid-column: span 1; }
+.stats-box {
+  grid-column: span 1;
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 12px;
+}
+.search-box { grid-column: span 3; }
+
+.appointments-box { grid-column: span 3; }
+.slots-box { grid-column: span 3; }
+
+.appointment-card {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.slot-chip {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 20px;
+  background: #eef6f1;
+  margin: 4px;
+}
+.slot-chip.booked {
+  background: #fdecea;
+}
+/* ---- FILTER BAR ---- */
+.filter-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ---- APPOINTMENTS ---- */
+.appointments-box {
+  height: 520px;               /* key */
+  display: flex;
+  flex-direction: column;
+}
+
+.appointments-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.appointments-scroll {
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+/* ---- APPOINTMENT CARD ---- */
+.appointment-card {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.appt-row {
+  display: grid;
+  gap: 12px;
+}
+
+.appt-row.top {
+  grid-template-columns: 1fr auto;
+  margin-bottom: 8px;
+}
+
+.appt-row.mid {
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: 10px;
+}
+
+.appt-row label {
+  font-size: 11px;
+  color: #888;
+}
+
+.code {
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.appt-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.muted {
+  color: #777;
+  font-size: 13px;
+}
+/* HEADER */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #eee;
+}
+
+.topbar .left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hamburger {
+  font-size: 22px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.logout {
+  text-decoration: none;
+  color: #1e8449;
+  font-weight: bold;
+}
+
+/* SIDE PANEL */
+.side-panel {
+  position: fixed;
+  top: 0;
+  left: -320px;
+  width: 300px;
+  height: 100%;
+  background: rgb(237, 181, 181);
+  padding: 20px;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+  transition: 0.3s;
+  z-index: 1000;
+}
+
+.side-panel.open {
+  left: 0;
+}
+
+.side-panel h3 {
+  margin-bottom: 10px;
+}
+
+/* DASHBOARD */
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+
+/* ===== STATS BENTO ===== */
+.stats-bento {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  position: relative;
+  background: white;
+  border-radius: 16px;
+  padding: 22px 24px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.12);
+}
+
+/* label */
+.stat-card span {
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+/* number */
+.stat-card h1 {
+  font-size: 42px;
+  margin: 10px 0 0;
+  font-weight: 800;
+}
+
+/* decorative accent */
+.stat-card::after {
+  content: "";
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  opacity: 0.15;
+}
+
+/* ===== COLOR THEMES ===== */
+.stat-card.total {
+  background: linear-gradient(135deg, #eef9f2, #ffffff);
+}
+.stat-card.total h1 { color: #1e8449; }
+.stat-card.total::after { background: #1e8449; }
+
+.stat-card.reserved {
+  background: linear-gradient(135deg, #fff4e6, #ffffff);
+}
+.stat-card.reserved h1 { color: #f39c12; }
+.stat-card.reserved::after { background: #f39c12; }
+
+.stat-card.confirmed {
+  background: linear-gradient(135deg, #e8f8f5, #ffffff);
+}
+.stat-card.confirmed h1 { color: #27ae60; }
+.stat-card.confirmed::after { background: #27ae60; }
+
+.stat-card.today {
+  background: linear-gradient(135deg, #eef3ff, #ffffff);
+}
+.stat-card.today h1 { color: #3b6cff; }
+.stat-card.today::after { background: #3b6cff; }
+
+/* ===== MOBILE ===== */
+@media (max-width: 600px) {
+  .stat-card h1 {
+    font-size: 34px;
+  }
+}
+/* ================== RESET ================== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f4f7f6;
+  color: #333;
+}
+
+/* ================== HEADER ================== */
+.bento-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: #ffffff;
+  border-bottom: 1px solid #eee;
+}
+
+.bento-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #1e8449;
+}
+
+.logout-btn {
+  text-decoration: none;
+  color: #1e8449;
+  font-weight: bold;
+}
+
+/* HAMBURGER */
+.hamburger {
+  font-size: 26px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #1e8449;
+  margin-right: 10px;
+}
+
+/* ================== SIDE PANEL ================== */
+.side-panel {
+  position: fixed;
+  top: 0;
+  left: -320px;
+  width: 300px;
+  height: 100%;
+  background: #ffffff;
+  padding: 20px;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+  transition: left 0.3s ease;
+  z-index: 1000;
+}
+
+.side-panel.open {
+  left: 0;
+}
+
+.side-panel h3 {
+  margin-top: 0;
+  color: #1e8449;
+}
+
+/* ================== BENTO GRID ================== */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 20px;
+}
+
+.bento {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+}
+
+/* ================== STATS ================== */
+.stats-box {
+  grid-column: span 3;
+}
+
+.stats-bento {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.stat-card {
+  position: relative;
+  border-radius: 16px;
+  padding: 22px;
+  background: #fff;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.12);
+}
+
+.stat-card span {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.stat-card h1 {
+  margin: 10px 0 0;
+  font-size: 42px;
+  font-weight: 800;
+}
+
+/* COLOR THEMES */
+.stat-card.total {
+  background: linear-gradient(135deg, #eef9f2, #ffffff);
+}
+.stat-card.total h1 { color: #1e8449; }
+
+.stat-card.reserved {
+  background: linear-gradient(135deg, #fff4e6, #ffffff);
+}
+.stat-card.reserved h1 { color: #f39c12; }
+
+.stat-card.confirmed {
+  background: linear-gradient(135deg, #e8f8f5, #ffffff);
+}
+.stat-card.confirmed h1 { color: #27ae60; }
+
+.stat-card.today {
+  background: linear-gradient(135deg, #eef3ff, #ffffff);
+}
+.stat-card.today h1 { color: #3b6cff; }
+
+/* ================== FILTER ================== */
+.search-box {
+  grid-column: span 3;
+}
+
+.search-box form {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 10px;
+}
+
+/* ================== APPOINTMENTS ================== */
+.appointments-box {
+  grid-column: span 3;
+  height: 520px;
+  display: flex;
+  flex-direction: column;
+}
+
+.appointments-scroll {
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+/* CARD */
+.appointment-card {
+  background: #ffffff;
+  border: 1px solid #eee;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.status {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.RESERVED { background: #fff3cd; color: #856404; }
+.CONFIRMED { background: #d4edda; color: #155724; }
+.CANCELLED { background: #f8d7da; color: #721c24; }
+.DONE { background: #d1ecf1; color: #0c5460; }
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+/* ================== SLOTS ================== */
+.slots-box {
+  grid-column: span 3;
+}
+
+.slot-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 10px;
+}
+
+.slots-list {
+  margin-top: 10px;
+}
+
+.slot-chip {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 20px;
+  background: #eef6f1;
+  margin: 4px;
+}
+
+.slot-chip.booked {
+  background: #fdecea;
+}
+
+/* ================== FORMS ================== */
+input,
+textarea,
+select,
+button {
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+button {
+  background: #1e8449;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+/* WHATSAPP BUTTON */
+.wa-btn {
+  display: inline-block;
+  background: #25D366;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* ================== RESPONSIVE ================== */
+@media (max-width: 900px) {
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-bento {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .search-box form,
+  .slot-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .stat-card h1 {
+    font-size: 32px;
+  }
+}
+.page-title {
+  text-align: center;
+  margin: 30px 0 20px;
+}
+/* FULL PAGE LAYOUT */
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* MAIN CONTENT */
+main.content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* LOGIN CARD */
+.login-card {
+  width: 100%;
+  max-width: 520px;     /* 👈 bigger card */
+  padding: 32px 36px;   /* 👈 more breathing space */
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.08);
+}
+
+/* INPUTS */
+.login-card input {
+  font-size: 16px;
+  padding: 14px;
+}
+
+/* BUTTON */
+.login-card button {
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* ================== TESTIMONIALS FIX ================== */
+
+/* Break out of narrow .section */
+.testimonials-section {
+  max-width: 100% !important;
+}
+
+/* Center grid with full width */
+.testimonials {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .testimonials {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .testimonials {
+    grid-template-columns: 1fr;
+  }
+}

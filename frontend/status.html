@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Appointment Status</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css" />
+    <meta charset="UTF-8">
+
+  </head>
+
+  <body>
+    <header>
+      <h2>Check Appointment Status</h2>
+    </header>
+
+    <div class="container">
+
+      <form id="statusForm">
+        <input
+          id="confirmation_code"
+          placeholder="Enter Confirmation Number"
+          required
+        />
+        <button type="submit">Check Status</button>
+      </form>
+
+      <div id="msg"></div>
+
+      <div id="details" style="display:none;">
+        <h3>Appointment Details</h3>
+
+        <table>
+          <tr>
+            <th>Confirmation No</th>
+            <td id="d-code"></td>
+          </tr>
+          <tr>
+            <th>Name</th>
+            <td id="d-name"></td>
+          </tr>
+          <tr>
+            <th>Mobile</th>
+            <td id="d-mobile"></td>
+          </tr>
+          <tr>
+            <th>Date</th>
+            <td id="d-date"></td>
+          </tr>
+          <tr>
+            <th>Time</th>
+            <td id="d-time"></td>
+          </tr>
+          <tr>
+            <th>Status</th>
+            <td id="d-status" class="status"></td>
+          </tr>
+        </table>
+
+        <button
+          id="cancelBtn"
+          style="background:red; display:none;"
+          onclick="cancelAppt()">
+          Cancel Appointment
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const BACKEND = "http://localhost:5000"; // CHANGE THIS TO YOUR BACKEND URL
+      const msg = document.getElementById("msg");
+      const details = document.getElementById("details");
+      let currentCode = "";
+
+      function showMsg(text, type="error") {
+        msg.innerText = text;
+        msg.className = "flash " + type;
+      }
+
+      document.getElementById("statusForm").addEventListener("submit", async e => {
+        e.preventDefault();
+
+        details.style.display = "none";
+        showMsg("");
+
+        const code = confirmation_code.value.trim();
+        if (!code) return;
+
+        const res = await fetch(`${BACKEND}/api/status`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ confirmation_code: code })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          showMsg(data.error || "Appointment not found");
+          return;
+        }
+
+        currentCode = data.confirmation_code;
+
+        document.getElementById("d-code").innerText = data.confirmation_code;
+        document.getElementById("d-name").innerText = data.patient_name;
+        document.getElementById("d-mobile").innerText = data.mobile;
+        document.getElementById("d-date").innerText = data.appointment_date;
+        document.getElementById("d-time").innerText = data.slot_time;
+        document.getElementById("d-status").innerText = data.status;
+        document.getElementById("d-status").className = "status " + data.status;
+
+        if (data.status === "RESERVED") {
+          cancelBtn.style.display = "inline-block";
+        } else {
+          cancelBtn.style.display = "none";
+        }
+
+        details.style.display = "block";
+      });
+
+      async function cancelAppt() {
+        if (!confirm("Cancel this appointment?")) return;
+
+        await fetch(`${BACKEND}/api/cancel/${currentCode}`, {
+          method: "POST"
+        });
+
+        showMsg("Appointment cancelled", "success");
+        details.style.display = "none";
+      }
+    </script>
+  </body>
+</html>

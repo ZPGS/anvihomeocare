@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+  <title>Admin Login</title>
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+
+<header>
+  <h2 class="page-title">Admin Login</h2>
+</header>
+
+<main class="content">
+  <div class="container login-card">
+
+    <div id="msg"></div>
+
+    <form id="loginForm">
+      <input id="username" type="text" placeholder="Admin Username" required>
+      <input id="password" type="password" placeholder="Admin Password" required>
+      <button type="submit">Login</button>
+    </form>
+  </div>
+</main>
+
+<footer class="footer">
+  © 2026 Sangamkripa HomeoCare • Online Homeopathy Consultation
+</footer>
+
+<script>
+  const BACKEND = "http://localhost:5000"; // CHANGE THIS TO YOUR BACKEND URL
+  const msg = document.getElementById("msg");
+
+  function showMsg(text, type="error") {
+    msg.innerText = text;
+    msg.className = "flash " + type;
+  }
+
+  document.getElementById("loginForm").addEventListener("submit", async e => {
+    e.preventDefault();
+
+    const res = await fetch(`${BACKEND}/api/admin/login`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: username.value,
+        password: password.value
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      showMsg(data.error || "Login failed");
+      return;
+    }
+
+    // success
+    window.location.href = "/admin_dashboard.html";
+  });
+</script>
+
+</body>
+</html>

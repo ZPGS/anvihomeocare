@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Book Appointment</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css" />
+    <meta charset="UTF-8">
+
+  </head>
+
+  <body>
+    <header>
+      <h2 class="page-title">Book Your Appointment!</h2>
+    </header>
+
+    <div class="container">
+
+      <div id="msg"></div>
+
+      <h3>Patient Details</h3>
+
+      <form id="bookForm">
+        <input id="patient_name" placeholder="Full Name" required />
+        <input id="mobile" placeholder="Mobile Number" required />
+        <textarea
+          id="address"
+          placeholder="Postal Address"
+          required
+        ></textarea>
+
+        <h3>Select Available Slot</h3>
+        <select id="slotSelect" required>
+          <option value="">Loading slots...</option>
+        </select>
+
+        <button type="submit">Reserve Appointment</button>
+      </form>
+    </div>
+
+    <script>
+      const BACKEND = "http://localhost:5000"; // CHANGE THIS TO YOUR BACKEND URL
+      const msg = document.getElementById("msg");
+
+      function showMsg(text, type = "info") {
+        msg.innerText = text;
+        msg.className = "flash " + type;
+      }
+
+      // Load slots
+      fetch(`${BACKEND}/api/slots`)
+        .then(r => r.json())
+        .then(slots => {
+          const sel = document.getElementById("slotSelect");
+          sel.innerHTML = "<option value=''>Select Slot</option>";
+
+          if (!slots.length) {
+            sel.innerHTML = "<option>No slots available</option>";
+            return;
+          }
+
+          slots.forEach(s => {
+            sel.innerHTML += `
+              <option value="${s.id}">
+                ${s.slot_date} | ${s.start_time} - ${s.end_time}
+              </option>`;
+          });
+        })
+        .catch(() => {
+          showMsg("Failed to load slots", "error");
+        });
+
+      // Book appointment
+      document.getElementById("bookForm").addEventListener("submit", async e => {
+        e.preventDefault();
+
+        showMsg("Reserving slot...", "info");
+
+        const res = await fetch(`${BACKEND}/api/book`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            patient_name: patient_name.value,
+            mobile: mobile.value,
+            address: address.value,
+            slot_id: slotSelect.value
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          showMsg(data.error || "Booking failed", "error");
+          return;
+        }
+
+        showMsg(
+          `Appointment reserved! Confirmation code: ${data.confirmation_code}`,
+          "success"
+        );
+
+        bookForm.reset();
+        loadSlots();
+      });
+
+      function loadSlots() {
+        fetch(`${BACKEND}/api/slots`)
+          .then(r => r.json())
+          .then(slots => {
+            const sel = document.getElementById("slotSelect");
+            sel.innerHTML = "<option value=''>Select Slot</option>";
+            slots.forEach(s => {
+              sel.innerHTML += `
+                <option value="${s.id}">
+                  ${s.slot_date} | ${s.start_time} - ${s.end_time}
+                </option>`;
+            });
+          });
+      }
+    </script>
+  </body>
+</html>
