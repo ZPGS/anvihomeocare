@@ -15,15 +15,19 @@ from scheduler import auto_expire_reserved, send_reminders
 # =================================================
 app = Flask(__name__)
 
+from flask_cors import CORS
+
 CORS(
     app,
-    resources={r"/api/*": {"origins": [
+    supports_credentials=False,
+    origins=[
         "http://localhost:5500",
         "http://127.0.0.1:5500",
         "https://anvihomeocare.netlify.app",
         "https://www.anvihomeocare.netlify.app"
-    ]}}
+    ]
 )
+
 
 
 # =================================================
