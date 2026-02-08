@@ -70,7 +70,12 @@
 <footer>© 2026 Dr. HomeoCare • Online Homeopathy Consultation</footer>
 
 <script>
-const BACKEND = window.BACKEND_URL || "http://localhost:5000";
+//const BACKEND =
+  //window.location.hostname === "localhost"
+    //? "http://localhost:5000"
+    //: "https://anvihomeocare.onrender.com";
+
+const BACKEND = "https://anvihomeocare.onrender.com";
 
 function toggleMenu() {
   document.getElementById("sidePanel").classList.toggle("open");

@@ -1,1 +1,1 @@
-window.BACKEND_URL = "https://medbuddy.onrender.com";
+window.BACKEND_URL = "https://anvihomeocare.onrender.com";

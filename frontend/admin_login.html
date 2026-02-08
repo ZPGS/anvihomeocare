@@ -1,9 +1,8 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <title>Admin Login</title>
   <meta charset="UTF-8">
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -24,6 +23,7 @@
       <input id="password" type="password" placeholder="Admin Password" required>
       <button type="submit">Login</button>
     </form>
+
   </div>
 </main>
 
@@ -32,36 +32,49 @@
 </footer>
 
 <script>
-  const BACKEND = "http://localhost:5000"; // CHANGE THIS TO YOUR BACKEND URL
-  const msg = document.getElementById("msg");
+  /* =================================================
+     BACKEND CONFIG (single source of truth)
+     ================================================= */
+  const BACKEND = "https://anvihomeocare.onrender.com";
 
-  function showMsg(text, type="error") {
-    msg.innerText = text;
+  const msg = document.getElementById("msg");
+  const form = document.getElementById("loginForm");
+
+  function showMsg(text, type = "error") {
+    msg.textContent = text;
     msg.className = "flash " + type;
   }
 
-  document.getElementById("loginForm").addEventListener("submit", async e => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    showMsg("Logging in...", "info");
 
-    const res = await fetch(`${BACKEND}/api/admin/login`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: username.value,
-        password: password.value
-      })
-    });
+    try {
+      const res = await fetch(`${BACKEND}/api/admin/login`, {
+        method: "POST",
+        credentials: "include",   // 🔥 REQUIRED FOR SESSION COOKIE
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: document.getElementById("username").value,
+          password: document.getElementById("password").value
+        })
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
-      showMsg(data.error || "Login failed");
-      return;
+      if (!res.ok) {
+        showMsg(data.error || "Invalid credentials");
+        return;
+      }
+
+      // ✅ Login successful → go to dashboard
+      window.location.replace("/admin_dashboard.html");
+
+    } catch (err) {
+      showMsg("Unable to connect to server");
     }
-
-    // success
-    window.location.href = "/admin_dashboard.html";
   });
 </script>
 
