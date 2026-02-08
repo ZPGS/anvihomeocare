@@ -1,10 +1,12 @@
-from flask import Flask, request, session, jsonify, send_file
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-import sqlite3, io
-from datetime import datetime
+import sqlite3, io, os
+from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
+import jwt
+from functools import wraps
 
 from scheduler import auto_expire_reserved, send_reminders
 
@@ -12,52 +14,77 @@ from scheduler import auto_expire_reserved, send_reminders
 # APP SETUP
 # =================================================
 app = Flask(__name__)
-app.secret_key = "medbuddy-secret"
-
-from flask_cors import CORS
 
 CORS(
     app,
-    supports_credentials=True,
-    origins=[
+    resources={r"/api/*": {"origins": [
         "http://localhost:5500",
         "http://127.0.0.1:5500",
-        "https://your-site-name.netlify.app"
-    ]
+        "https://anvihomeocare.netlify.app"
+    ]}}
 )
 
+# =================================================
+# JWT CONFIG
+# =================================================
+JWT_SECRET = os.environ.get("JWT_SECRET", "dev-secret")
+JWT_ALGO = "HS256"
+JWT_EXP_MINUTES = 60
 
-CORS(app, supports_credentials=True)
-
+# =================================================
+# DB CONFIG
+# =================================================
 DB = "medbuddy.db"
 
-# =================================================
-# DB HELPER
-# =================================================
 def db():
     conn = sqlite3.connect(DB)
     conn.row_factory = sqlite3.Row
     return conn
 
 # =================================================
-# CONFIRMATION CODE
+# JWT HELPERS
 # =================================================
-def generate_code(conn):
-    count = conn.execute(
-        "SELECT COUNT(*) FROM appointments"
-    ).fetchone()[0] + 1
-    return f"MB-{datetime.now().strftime('%Y%m%d')}-{str(count).zfill(4)}"
+def create_token():
+    payload = {
+        "admin": True,
+        "exp": datetime.utcnow() + timedelta(minutes=JWT_EXP_MINUTES)
+    }
+    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGO)
+    if isinstance(token, bytes):
+        token = token.decode("utf-8")
+    return token
+
+
+def admin_required(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        auth = request.headers.get("Authorization", "")
+        if not auth.startswith("Bearer "):
+            return jsonify({"error": "Missing token"}), 401
+
+        token = auth.split(" ", 1)[1]
+
+        try:
+            jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGO])
+        except jwt.ExpiredSignatureError:
+            return jsonify({"error": "Token expired"}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({"error": "Invalid token"}), 401
+
+        return fn(*args, **kwargs)
+    return wrapper
 
 # =================================================
 # SCHEDULER (Render-safe)
 # =================================================
-scheduler = BackgroundScheduler()
-scheduler.add_job(auto_expire_reserved, "interval", minutes=10)
-scheduler.add_job(send_reminders, "interval", minutes=5)
-scheduler.start()
+if os.environ.get("RUN_SCHEDULER") == "1":
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(auto_expire_reserved, "interval", minutes=10)
+    scheduler.add_job(send_reminders, "interval", minutes=5)
+    scheduler.start()
 
 # =================================================
-# HEALTH CHECK
+# HEALTH
 # =================================================
 @app.route("/")
 def health():
@@ -75,6 +102,7 @@ def available_slots():
     conn.close()
     return jsonify([dict(r) for r in rows])
 
+
 @app.route("/api/book", methods=["POST"])
 def book():
     f = request.json
@@ -89,7 +117,8 @@ def book():
         conn.close()
         return jsonify({"error": "Slot not available"}), 400
 
-    code = generate_code(conn)
+    count = conn.execute("SELECT COUNT(*) FROM appointments").fetchone()[0] + 1
+    code = f"MB-{datetime.now().strftime('%Y%m%d')}-{str(count).zfill(4)}"
     now = datetime.now().isoformat()
 
     conn.execute("""
@@ -120,13 +149,10 @@ def book():
 
     return jsonify({
         "success": True,
-        "confirmation_code": code,
-        "message": "Slot reserved. Payment pending."
+        "confirmation_code": code
     })
 
-# =================================================
-# STATUS / HISTORY / CANCEL
-# =================================================
+
 @app.route("/api/status", methods=["POST"])
 def status():
     conn = db()
@@ -141,6 +167,7 @@ def status():
 
     return jsonify(dict(appt))
 
+
 @app.route("/api/history", methods=["POST"])
 def history():
     conn = db()
@@ -150,6 +177,7 @@ def history():
     ).fetchall()
     conn.close()
     return jsonify([dict(r) for r in rows])
+
 
 @app.route("/api/cancel/<code>", methods=["POST"])
 def cancel(code):
@@ -210,13 +238,6 @@ def appointment_pdf(code):
         pdf.drawString(100, y, f"{k}: {v}")
         y -= 30
 
-    pdf.drawString(100, y, "Meeting Link:")
-    pdf.drawString(
-        250, y,
-        a["meeting_link"] if a["status"] == "CONFIRMED"
-        else "Will be shared after confirmation"
-    )
-
     pdf.showPage()
     pdf.save()
     buf.seek(0)
@@ -229,21 +250,21 @@ def appointment_pdf(code):
     )
 
 # =================================================
-# ADMIN APIs (SESSION BASED)
+# ADMIN APIs (JWT)
 # =================================================
 @app.route("/api/admin/login", methods=["POST"])
 def admin_login():
-    f = request.json
-    if f["username"] == "admin" and f["password"] == "admin123":
-        session["admin"] = True
-        return jsonify({"success": True})
+    data = request.json
+
+    if data.get("username") == "admin" and data.get("password") == "admin123":
+        return jsonify({"token": create_token()})
+
     return jsonify({"error": "Invalid credentials"}), 401
 
-@app.route("/api/admin/dashboard")
-def admin_dashboard():
-    if not session.get("admin"):
-        return jsonify({"error": "unauthorized"}), 401
 
+@app.route("/api/admin/dashboard")
+@admin_required
+def admin_dashboard():
     conn = db()
 
     appointments = conn.execute(
@@ -259,9 +280,7 @@ def admin_dashboard():
     ).fetchone()
 
     stats = {
-        "total": conn.execute(
-            "SELECT COUNT(*) FROM appointments"
-        ).fetchone()[0],
+        "total": conn.execute("SELECT COUNT(*) FROM appointments").fetchone()[0],
         "reserved": conn.execute(
             "SELECT COUNT(*) FROM appointments WHERE status='RESERVED'"
         ).fetchone()[0],
@@ -278,15 +297,14 @@ def admin_dashboard():
     return jsonify({
         "appointments": [dict(a) for a in appointments],
         "slots": [dict(s) for s in slots],
-        "settings": dict(settings),
+        "settings": dict(settings) if settings else {},
         "stats": stats
     })
 
-@app.route("/api/admin/slots", methods=["POST"])
-def add_slot():
-    if not session.get("admin"):
-        return jsonify({"error": "unauthorized"}), 401
 
+@app.route("/api/admin/slots", methods=["POST"])
+@admin_required
+def add_slot():
     f = request.json
     conn = db()
     conn.execute(
@@ -297,11 +315,10 @@ def add_slot():
     conn.close()
     return jsonify({"success": True})
 
-@app.route("/api/admin/update/<int:id>", methods=["POST"])
-def admin_update(id):
-    if not session.get("admin"):
-        return jsonify({"error": "unauthorized"}), 401
 
+@app.route("/api/admin/update/<int:id>", methods=["POST"])
+@admin_required
+def admin_update(id):
     f = request.json
     conn = db()
     conn.execute("""
@@ -319,18 +336,15 @@ def admin_update(id):
     conn.close()
     return jsonify({"success": True})
 
-@app.route("/api/admin/settings", methods=["POST"])
-def admin_settings():
-    if not session.get("admin"):
-        return jsonify({"error": "unauthorized"}), 401
 
+@app.route("/api/admin/settings", methods=["POST"])
+@admin_required
+def admin_settings():
     f = request.json
     conn = db()
     conn.execute("""
         UPDATE admin_settings
-        SET doctor_whatsapp=?,
-            upi_link=?,
-            default_amount=?
+        SET doctor_whatsapp=?, upi_link=?, default_amount=?
         WHERE id=1
     """, (
         f["doctor_whatsapp"],
@@ -341,11 +355,9 @@ def admin_settings():
     conn.close()
     return jsonify({"success": True})
 
-@app.route("/api/admin/logout")
-def admin_logout():
-    session.clear()
-    return jsonify({"success": True})
 
+# =================================================
+# RUN
 # =================================================
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
